@@ -1,0 +1,67 @@
+name: 'Cascavel Dependency Audit'
+description: 'Scan project dependencies for known CVEs. Supports npm, pip, Go, Ruby, Rust, PHP, and Java.'
+author: 'RET Tecnologia'
+
+branding:
+  icon: 'package'
+  color: 'red'
+
+inputs:
+  path:
+    description: 'Project root to scan for dependency files'
+    required: false
+    default: '.'
+  severity:
+    description: 'Minimum CVE severity to report: low, medium, high, critical'
+    required: false
+    default: 'medium'
+  fail-on-findings:
+    description: 'Fail the pipeline if vulnerabilities are found'
+    required: false
+    default: 'true'
+  ecosystems:
+    description: 'Comma-separated ecosystems to scan: npm,pip,go,ruby,rust,composer,maven (or "auto")'
+    required: false
+    default: 'auto'
+  ignore-cves:
+    description: 'Comma-separated CVE IDs to ignore (e.g., CVE-2024-1234,CVE-2024-5678)'
+    required: false
+    default: ''
+  max-age-days:
+    description: 'Only report CVEs published within N days (0 = all)'
+    required: false
+    default: '0'
+  sarif-output:
+    description: 'Generate SARIF report for GitHub Security tab'
+    required: false
+    default: 'true'
+
+outputs:
+  total-vulnerabilities:
+    description: 'Total number of vulnerabilities found'
+  critical-count:
+    description: 'Number of critical CVEs'
+  high-count:
+    description: 'Number of high CVEs'
+  affected-packages:
+    description: 'Number of affected packages'
+  report-path:
+    description: 'Path to JSON report'
+  sarif-path:
+    description: 'Path to SARIF report'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Cascavel Dependency Audit
+      id: audit
+      shell: bash
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_SEVERITY: ${{ inputs.severity }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on-findings }}
+        INPUT_ECOSYSTEMS: ${{ inputs.ecosystems }}
+        INPUT_IGNORE: ${{ inputs.ignore-cves }}
+        INPUT_MAX_AGE: ${{ inputs.max-age-days }}
+        INPUT_SARIF: ${{ inputs.sarif-output }}
+      run: bash "${{ github.action_path }}/auditor.sh"
